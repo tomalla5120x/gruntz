@@ -50,76 +50,13 @@ Other notes:
 #include "gruntz/cgruntzapp.h"
 #include "commands.h"
 
-bool GetGruntzDriveLetter_TestDrive(char driveLetter)
-{
-	//@address: inlined
-	char drivePathBuffer[32];
-	sprintf(drivePathBuffer, "%c:\\", driveLetter);
-
-	if(GetDriveTypeA(drivePathBuffer) == DRIVE_CDROM)
-	{
-		char exePathBuffer[256];
-		sprintf(exePathBuffer, "%c:\\GAME\\GRUNTZ.EXE", driveLetter);
-		return Utils::WinAPI::FileExists(exePathBuffer);
-	}
-
-	return false;
-}
-
-// returns the letter of the CDROM drive with Gruntz CD or 0 if not found
-char GetGruntzDriveLetter()
-{
-	//@address: 0041fff0
-
-	//@address: 0062c1b4
-	static char driveLetterEvaluated = 0;
-
-	if(driveLetterEvaluated != 0)
-		return driveLetterEvaluated;
-
-	Utils::RegistryHelper registryHelper;
-	
-	if(registryHelper.Open("Monolith Productions", "Gruntz", "1.0", nullptr, HKEY_LOCAL_MACHINE, nullptr))
-	{
-		char valueBuffer[30];
-		unsigned int valueBufferSize = sizeof(valueBuffer);
-		valueBuffer[0] = 0;
-
-		if(registryHelper.GetValueString("CdRom Drive", valueBuffer, &valueBufferSize)
-			&& valueBuffer[0] > 20
-			&& GetGruntzDriveLetter_TestDrive(valueBuffer[0]))
-		{
-			driveLetterEvaluated = valueBuffer[0];
-			return valueBuffer[0];
-		}
-	}
-
-	for(char driveLetter = 'A'; driveLetter <= 'Z'; ++driveLetter)
-	{
-		if(!GetGruntzDriveLetter_TestDrive(driveLetter))
-			continue;
-
-		driveLetterEvaluated = driveLetter;
-		return driveLetter;
-	}
-	
-	return 0;
-}
-
-// tests if Gruntz CD is in any CDROM drive
-bool IsGruntzCDInAnyDrive()
-{
-	//@address: 0041fd60
-	return(GetGruntzDriveLetter() != 0);
-}
-
 // checks for the absence of the Gruntz CD in the CDROM drive
 // either waits for the CD to be insterted or asks if the user wants to run the game in the spawn mode
 // returns false if the prompts were cancelled
 bool StartUpPrompt(HWND hParentWindow)
 {
 	//@address: 0041f9c0
-	if(IsGruntzCDInAnyDrive())
+	if(Utils::WinAPI::IsGruntzCDInAnyDrive())
 	{
 		Globals::is_spawn_mode = false;
 		return true;
@@ -164,12 +101,12 @@ bool StartUpPrompt(HWND hParentWindow)
 
 		CWaitCursor waitCursor;
 
-		if(IsGruntzCDInAnyDrive())
+		if(Utils::WinAPI::IsGruntzCDInAnyDrive())
 			return true;
 			
 		Sleep(1000);
 
-		if(IsGruntzCDInAnyDrive())
+		if(Utils::WinAPI::IsGruntzCDInAnyDrive())
 			return true;
 	}
 }
@@ -264,7 +201,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	int exitValue = 0;
 
 	if(ManageAdvancedOptions(lpCmdLine)
-		&& Globals::gruntz_app->VirtualUnknownMethod03(Globals::game_instance, "Gruntz", "Gruntz", lpCmdLine, 0, 0x80000000, 0x80000000))
+		//@todo: remove the Windowed flag - it's for debugging purposes only
+		&& Globals::gruntz_app->VirtualUnknownMethod03(Globals::game_instance, "Gruntz", "Gruntz", lpCmdLine, WAP32::CGameApp::WindowClassFlags::Windowed, 0x80000000, 0x80000000))
 	{
 		//@todo: commented out until the message loop is recreated
 		//exitValue = Globals::gruntz_app->VirtualUnknownMethod07();

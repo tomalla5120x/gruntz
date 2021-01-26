@@ -51,6 +51,9 @@
     <ClCompile Include="gruntz\font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dx\cnetmgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils\winapi.h">
@@ -95,6 +98,18 @@
     <ClInclude Include="gruntz\font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\dplobby.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dx\cnetmgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\240192_1.bin">
@@ -132,5 +147,8 @@
     <ResourceCompile Include="resources\Gruntz.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\dplayx.lib" />
   </ItemGroup>
 </Project>

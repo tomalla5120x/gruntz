@@ -4,9 +4,11 @@
 #undef UNICODE
 #undef _UNICODE
 #include <afxwin.h>
+#include <dplobby.h>
 
 #include "../wap32/cgamemgr.h"
 #include "../utils/memory_pool.h"
+#include "../utils/registry_helper.h"
 #include "font.h"
 
 struct Pair
@@ -229,7 +231,7 @@ public:
 	//@offset: 34
 	int fieldUnknown034;
 	//@offset: 38
-	int fieldUnknown038;
+	Utils::RegistryHelper* m_pRegistryHelper;
 	//@offset: 3c
 	int fieldUnknown03C;
 	//@offset: 40
@@ -265,23 +267,23 @@ public:
 	//@offset: 7c
 	int fieldUnknown07C;
 	//@offset: 80
-	int fieldUnknown080;
+	int m_numRuns;
 	//@offset: 84
-	int fieldUnknown084;
+	int m_numMovies;
 	//@offset: 88
 	int fieldUnknown088;
 	//@offset: 8c
 	int fieldUnknown08C;
 	//@offset: 90
 	int fieldUnknown090;
-
-//@offset: 94
-char _padding1[8];
-
+	//@offset: 94
+	int m_resolutionWidth;
+	//@offset: 98
+	int m_resolutionHeight;
 	//@offset: 9c
-	int fieldUnknown09C;
+	bool m_unknownIsLobbyConnectionSettingsInitialized;
 	//@offset: a0
-	int fieldUnknown0A0;
+	bool m_unknownIsLobbyConnectionSettingsAttempted;
 	//@offset: a4
 	int fieldUnknown0A4;
 	//@offset: a8
@@ -293,21 +295,21 @@ char _padding1[8];
 	//@offset: b4
 	int fieldUnknown0B4;
 	//@offset: b8
-	int fieldUnknown0B8;
+	int m_isCheckpointPrompts;
 	//@offset: bc
 	int fieldUnknown0BC;
 	//@offset: c0
-	int fieldUnknown0C0;
+	LPDIRECTPLAYLOBBYA m_pDirectPlayLobby;
 	//@offset: c4
-	int fieldUnknown0C4;
+	DPLCONNECTION* m_pDirectPlayConnection;
 	//@offset: c8
 	CString strUnknownString0C8;
 	//@offset: cc
 	int fieldUnknown0CC;
-
-//@offset: d0
-char _padding2[8];
-
+	//@offset: d0
+	char m_driveLetter;
+	//@offset: d4
+	bool m_isDriveLetterLoaded;
 	//@offset: d8
 	CPtrArray aUnknownPtrArray0D8;
 	//@offset: ec
@@ -321,23 +323,25 @@ char _padding2[8];
 	//@offset: fc
 	int fieldUnknown0FC;
 	//@offset: 100
-	int fieldUnknown100;
+	int m_isVoiceEnabled;
 	//@offset: 104
-	int fieldUnknown104;
+	int m_isAmbientEnabled;
 	//@offset: 108
-	int fieldUnknown108;
+	int m_isInterlaced;
 	//@offset: 10c
-	int fieldUnknown10C;
+	int m_isHighDetail;
 	//@offset: 110
-	int fieldUnknown110;
+	int m_unknownSecondIsHighDetail;
 	//@offset: 114
 	int fieldUnknown114;
 	//@offset: 118
-	int fieldUnknown118;
-
-//@offset: 11c
-char _padding3[0xC];
-
+	int m_isEasyMode;
+	//@offset: 11c
+	int m_soundVolume;
+	//@offset: 120
+	int m_voiceVolume;
+	//@offset: 124
+	int m_scrollSpeed;
 	//@offset: 128
 	int fieldUnknown128;
 	//@offset: 12c
@@ -371,11 +375,65 @@ char _padding4[0x14];
 	//@address: 0064f9b0
 	static Font font_tiny;
 
+	//@address: 0064652c
+	static bool is_high_quality_movie_enabled;
+	//@address: 0064650c
+	static int is_audio_disabled;
+	//@address: 00646514
+	static int is_sound_disabled;
+	//@address: 00646518
+	static int is_music_disabled;
+	//@address: 0064651c
+	static int is_fades_disabled;
+	//@address: 00646528
+	static int is_direct_video_access_disabled;
+	//@address: 00646520
+	static int is_joystick_disabled;
+	//@address: 00646524
+	static int is_soundfonts_disabled;
+	//@address: 00646530
+	static int is_triple_enabled;
+	//@address: 00646534
+	static int is_hicolor_enabled;
+	//@address: 00646538
+	static int is_truecolor_enabled;
+	//@address: 0064653c
+	static int is_emulation_enabled;
+
+	//@address: 006461c4
+	static int unknown_global_006461c4;
+	//@address: 00646228
+	static int unknown_global_00646228;
+	//@address: 006461c0
+	static int unknown_global_006461c0;
+	//@address: 006464c0
+	static int unknown_global_006464c0;
+	//@address: 00646490
+	static int unknown_global_00646490;
+	//@address: 006460fc
+	static int unknown_global_006460fc;
+	//@address: 0064622c
+	static int unknown_global_0064622c;
+	//@address: 00646200
+	static int unknown_global_00646200;
+	//@address: 006464b0
+	static int unknown_global_006464b0;
+	//@address: 006464b8
+	static int unknown_global_006464b8;
+	//@address: 006464b4
+	static int unknown_global_006464b4;
+	//@address: 006464bc
+	static int unknown_global_006464bc;
+
 private:
 	//@address: 0064fa6c
 	static bool is_font_initialized;
 
 	bool InitializeFonts();
+	void DecodeResolution(int resolution, int& width, int& height);
+	char GetGruntzDriveLetter();
+
+	bool InitializeLobbyConnectionSettings();
 };
 
 #endif

@@ -223,7 +223,7 @@ void WAP32::CGameApp::InitializeDefaultCreateStruct()
 
 	int style, dwExStyle;
 
-	if(m_gameInfo.windowClassFlags & WindowClassFlags::Windowed)
+	if(m_gameInfo.windowClassFlags & WindowClassFlags::Windowed )
 	{
 		style = WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_GROUP | WS_TABSTOP;
 		dwExStyle = WS_EX_APPWINDOW;
@@ -273,11 +273,11 @@ void WAP32::CGameApp::InitializeDefaultWindowClass()
 	m_wndClass.lpszClassName = m_gameInfo.szWindowClassName;
 }
 
-LRESULT CALLBACK WAP32::CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WAP32::CGameApp::GameWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	//@address: 0053d2d0
 	//@todo
-	return 0;
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 // sets the error to be reported on window close and send the close message

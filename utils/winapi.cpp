@@ -5,6 +5,8 @@
 #include <tlhelp32.h>
 #include <mmsystem.h>
 
+#include "registry_helper.h"
+
 using namespace Utils::WinAPI;
 
 char* path_separator = "\\";
@@ -15,55 +17,74 @@ typedef BOOL (WINAPI *PFProcess32Next)(HANDLE hSnapshot, LPPROCESSENTRY32 lppe);
 typedef BOOL (WINAPI *PFModule32First)(HANDLE hSnapshot, LPMODULEENTRY32 lpme);
 typedef BOOL (WINAPI *PFModule32Next)(HANDLE hSnapshot, LPMODULEENTRY32 lpme);
 
-// searches all modules of the process for the module with a specified module id
-// if found the module entry passed to the function is filled with module data and the function returns true
-//
-// @legacy: on newer windows operating systems the function will never find any matching modules, since
-// the passed module id will never match any module id in the process (these fields are deprecated)
-bool LegacyFindModule(DWORD processId, DWORD moduleId, PMODULEENTRY32 pOutFoundModuleEntry, DWORD moduleEntrySize)
+namespace
 {
-	//@address: 00519170
-	MODULEENTRY32 moduleEntry32;
-	memset(&moduleEntry32, 0, sizeof(moduleEntry32));
-	moduleEntry32.dwSize = sizeof(moduleEntry32);
-
-	HMODULE hModuleKernel32 = GetModuleHandleA("KERNEL32.DLL");
-	if(hModuleKernel32 == NULL)
-		return false;
-
-	PFCreateToolhelp32Snapshot pfCreateToolhelp32Snapshot = (PFCreateToolhelp32Snapshot)GetProcAddress(hModuleKernel32, "CreateToolhelp32Snapshot");
-	if(pfCreateToolhelp32Snapshot == NULL)
-		return false;
-
-	PFModule32First pfModule32First = (PFModule32First)GetProcAddress(hModuleKernel32, "Module32First");
-	if(pfModule32First == NULL)
-		return false;
-
-	PFModule32Next pfModule32Next = (PFModule32Next)GetProcAddress(hModuleKernel32, "Module32Next");
-	if(pfModule32Next == NULL)
-		return false;
-
-	HANDLE hSnapshot = pfCreateToolhelp32Snapshot(TH32CS_SNAPMODULE, processId);
-	if(hSnapshot == INVALID_HANDLE_VALUE)
-		return false;
-
-	bool moduleFound = false;
-
-	if(pfModule32First(hSnapshot, &moduleEntry32))
+	// searches all modules of the process for the module with a specified module id
+	// if found the module entry passed to the function is filled with module data and the function returns true
+	//
+	// @legacy: on newer windows operating systems the function will never find any matching modules, since
+	// the passed module id will never match any module id in the process (these fields are deprecated)
+	bool LegacyFindModule(DWORD processId, DWORD moduleId, PMODULEENTRY32 pOutFoundModuleEntry, DWORD moduleEntrySize)
 	{
-		do
+		//@address: 00519170
+		MODULEENTRY32 moduleEntry32;
+		memset(&moduleEntry32, 0, sizeof(moduleEntry32));
+		moduleEntry32.dwSize = sizeof(moduleEntry32);
+
+		HMODULE hModuleKernel32 = GetModuleHandleA("KERNEL32.DLL");
+		if(hModuleKernel32 == NULL)
+			return false;
+
+		PFCreateToolhelp32Snapshot pfCreateToolhelp32Snapshot = (PFCreateToolhelp32Snapshot)GetProcAddress(hModuleKernel32, "CreateToolhelp32Snapshot");
+		if(pfCreateToolhelp32Snapshot == NULL)
+			return false;
+
+		PFModule32First pfModule32First = (PFModule32First)GetProcAddress(hModuleKernel32, "Module32First");
+		if(pfModule32First == NULL)
+			return false;
+
+		PFModule32Next pfModule32Next = (PFModule32Next)GetProcAddress(hModuleKernel32, "Module32Next");
+		if(pfModule32Next == NULL)
+			return false;
+
+		HANDLE hSnapshot = pfCreateToolhelp32Snapshot(TH32CS_SNAPMODULE, processId);
+		if(hSnapshot == INVALID_HANDLE_VALUE)
+			return false;
+
+		bool moduleFound = false;
+
+		if(pfModule32First(hSnapshot, &moduleEntry32))
 		{
-			if(moduleEntry32.th32ModuleID == moduleId)
+			do
 			{
-				moduleFound = true;
-				memcpy(pOutFoundModuleEntry, &moduleEntry32, moduleEntrySize);
-				break;
-			}
-		} while(pfModule32Next(hSnapshot, &moduleEntry32));
+				if(moduleEntry32.th32ModuleID == moduleId)
+				{
+					moduleFound = true;
+					memcpy(pOutFoundModuleEntry, &moduleEntry32, moduleEntrySize);
+					break;
+				}
+			} while(pfModule32Next(hSnapshot, &moduleEntry32));
+		}
+
+		CloseHandle(hSnapshot);
+		return moduleFound;
 	}
 
-	CloseHandle(hSnapshot);
-	return moduleFound;
+	bool GetGruntzDriveLetter_TestDrive(char driveLetter)
+	{
+		//@address: inlined
+		char drivePathBuffer[32];
+		sprintf(drivePathBuffer, "%c:\\", driveLetter);
+
+		if(GetDriveTypeA(drivePathBuffer) == DRIVE_CDROM)
+		{
+			char exePathBuffer[256];
+			sprintf(exePathBuffer, "%c:\\GAME\\GRUNTZ.EXE", driveLetter);
+			return Utils::WinAPI::FileExists(exePathBuffer);
+		}
+
+		return false;
+	}
 }
 
 bool Utils::WinAPI::LegacyAreProcessesRunning(char* szDescriptor, int minCount, HANDLE* pOutProcessHandle)
@@ -142,7 +163,53 @@ bool Utils::WinAPI::FileExists(char* szPath)
 		return false;
 
 	OFSTRUCT ofStruct;
-	return( OpenFile(szPath, &ofStruct, OF_EXIST) != HFILE_ERROR);
+	return(OpenFile(szPath, &ofStruct, OF_EXIST) != HFILE_ERROR);
+}
+
+char Utils::WinAPI::GetGruntzDriveLetter()
+{
+	//@address: 0041fff0
+
+	//@address: 0062c1b4
+	static char driveLetterEvaluated = 0;
+
+	if(driveLetterEvaluated != 0)
+		return driveLetterEvaluated;
+
+	Utils::RegistryHelper registryHelper;
+
+	if(registryHelper.Open("Monolith Productions", "Gruntz", "1.0", nullptr, HKEY_LOCAL_MACHINE, nullptr))
+	{
+		char valueBuffer[30];
+		unsigned int valueBufferSize = sizeof(valueBuffer);
+		valueBuffer[0] = 0;
+
+		if(registryHelper.GetValueString("CdRom Drive", valueBuffer, &valueBufferSize)
+			&& valueBuffer[0] > 20
+			&& GetGruntzDriveLetter_TestDrive(valueBuffer[0]))
+		{
+			driveLetterEvaluated = valueBuffer[0];
+			return valueBuffer[0];
+		}
+	}
+
+	for(char driveLetter = 'A'; driveLetter <= 'Z'; ++driveLetter)
+	{
+		if(!GetGruntzDriveLetter_TestDrive(driveLetter))
+			continue;
+
+		driveLetterEvaluated = driveLetter;
+		return driveLetter;
+	}
+
+	return 0;
+}
+
+// tests if Gruntz CD is in any CDROM drive
+bool Utils::WinAPI::IsGruntzCDInAnyDrive()
+{
+	//@address: 0041fd60
+	return(Utils::WinAPI::GetGruntzDriveLetter() != 0);
 }
 
 void Utils::WinAPI::LoadStringDefault(HINSTANCE hInstance, unsigned int idResource, char* szBuffer, unsigned int bufferSize, char* szDefault)
@@ -163,4 +230,10 @@ void Utils::WinAPI::ShowCursorForce()
 {
 	//@address: none
 	while(ShowCursor(TRUE) < 0);
+}
+
+void Utils::WinAPI::HideCursorForce()
+{
+	//@address: none
+	while(ShowCursor(FALSE) >= 0);
 }

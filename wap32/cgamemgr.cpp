@@ -16,8 +16,8 @@ int WAP32::CGameMgr::unknown_cgamemgr_global_time_related4;
 WAP32::CGameMgr::CGameMgr()
 {
 	//@address: 0053dff0
-	fieldUnknown010 = 1;
-	fieldUnknown014 = 1;
+	m_isSoundEnabled = 1;
+	m_isMusicEnabled = 1;
 	m_pGameWnd = nullptr;
 	m_pGameApp = nullptr;
 	fieldUnknown00C = 0;

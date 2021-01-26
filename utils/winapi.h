@@ -22,6 +22,12 @@ namespace Utils
 		// checks if a file with the given path exists
 		bool FileExists(char* szPath);
 
+		// returns the letter of the CDROM drive with Gruntz CD or 0 if not found
+		char GetGruntzDriveLetter();
+
+		// tests if Gruntz CD is in any CDROM drive
+		bool IsGruntzCDInAnyDrive();
+
 		// loads the string from the resources
 		// if it fails, the szDefault string is used instead
 		void LoadStringDefault(HINSTANCE hInstance, unsigned int idResource, char* szBuffer, unsigned int bufferSize, char* szDefault);
@@ -31,6 +37,9 @@ namespace Utils
 
 		// increments the display count until the cursor is shown
 		void ShowCursorForce();
+
+		// decrements the display count until the cursor is hidden
+		void HideCursorForce();
 	}
 }
 

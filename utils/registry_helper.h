@@ -10,7 +10,8 @@ namespace Utils
 	class RegistryHelper
 	{
 	public:
-		__declspec(noinline)  RegistryHelper();
+		//@size: 0x21C
+		RegistryHelper();
 		~RegistryHelper();
 
 		// opens the series of registry keys to form a path:

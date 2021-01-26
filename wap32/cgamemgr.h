@@ -34,9 +34,9 @@ namespace WAP32
 		//@offset: c
 		int fieldUnknown00C;
 		//@offset: 10
-		int fieldUnknown010;
+		int m_isSoundEnabled;
 		//@offset: 14
-		int fieldUnknown014;
+		int m_isMusicEnabled;
 		//@offset: 18
 		int fieldUnknown018;
 		//@offset: 1C
