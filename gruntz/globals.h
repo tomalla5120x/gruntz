@@ -9,7 +9,7 @@ Obviously I do not advocate for such design in any final program - it's only for
 #undef UNICODE
 #undef _UNICODE
 #include <afxwin.h>
-
+#include <atlimage.h>
 #include "../wap32/cgameapp.h"
 
 class Globals

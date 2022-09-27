@@ -10,6 +10,7 @@
 #include "../utils/memory_pool.h"
 #include "../utils/registry_helper.h"
 #include "font.h"
+#include "harry_potter.h"
 
 struct Pair
 {
@@ -219,15 +220,15 @@ public:
 	//@vftable: 14
 	virtual void UnknownVirtualMethod5() override;
 
-	void ReportError(int param_1, int param_2);
+	void ReportError(int errorMessageId, int errorCode);
 
 	//@offset: 0
 	//CGameMgr base
 
 	//@offset: 2c
-	int fieldUnknown02C;
+	int fieldUnknown02C; // @todo: pointer to the current game state (an object derived from CState class)
 	//@offset: 30
-	int fieldUnknown030_maybeSurfaceRestoreHandler;
+	UnknownClassCGruntzMgrHarryPotter* fieldUnknown030_maybeSurfaceRestoreHandler;
 	//@offset: 34
 	int fieldUnknown034;
 	//@offset: 38

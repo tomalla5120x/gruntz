@@ -298,6 +298,29 @@ bool CGruntzMgr::UnknownVirtualMethod1(WAP32::CGameWnd* pGameWnd, char* szCmdLin
 	}
 
 	//@address: 004839e3
+	Globals::game_cwinapp.m_hInstance = m_pGameApp->m_hInstance;
+
+	char szBuffer[256];
+	strcpy(szBuffer, szCmdLine);
+	AfxWinInit(m_pGameApp->m_hInstance, NULL, szBuffer, 1);
+
+	strUnknownString0C8.Empty();
+
+	fieldUnknown030_maybeSurfaceRestoreHandler = new UnknownClassCGruntzMgrHarryPotter();
+
+	//@address: 00483a60
+	int flagUnknown = 0xe1; // 1110 0001
+
+	if (is_audio_disabled || is_sound_disabled)
+		flagUnknown = 0xe5; // 1110 0101
+
+	if(is_emulation_enabled)
+		flagUnknown |= 0x10; // 0001 0000
+
+	fieldUnknown088 = 16;
+
+	//@address: 00483ab6
+	fieldUnknown030_maybeSurfaceRestoreHandler->UnknownVirtualMethod18(m_pGameWnd->m_hWnd, 0x280, 0x1e0, 0x10, flagUnknown);
 
 	//@todo
 	//until then, the method just fails gracefully:

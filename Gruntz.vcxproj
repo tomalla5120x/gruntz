@@ -150,6 +150,7 @@
     <ClCompile Include="dx\cnetmgr.cpp" />
     <ClCompile Include="gruntz\cgruntzmgr.cpp" />
     <ClCompile Include="gruntz\font.cpp" />
+    <ClCompile Include="gruntz\harry_potter.cpp" />
     <ClCompile Include="wap32\cgamemgr.cpp" />
     <ClCompile Include="gruntz\cgruntzwnd.cpp" />
     <ClCompile Include="wap32\cgamewnd.cpp" />
@@ -164,6 +165,8 @@
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="dx\cnetmgr.h" />
+    <ClInclude Include="gruntz\cstate.h" />
+    <ClInclude Include="gruntz\harry_potter.h" />
     <ClInclude Include="include\dplay.h" />
     <ClInclude Include="include\dplobby.h" />
     <ClInclude Include="gruntz\cgruntzmgr.h" />
